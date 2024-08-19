@@ -1,5 +1,6 @@
 import { GridHeaderCtrl, IGridHeaderComp } from "ag-grid-community";
 import {
+  createEffect,
   createMemo,
   createSignal,
   onCleanup,
@@ -25,12 +26,8 @@ const GridHeaderComp = () => {
     destroyFuncs.length = 0;
   });
 
-  onMount(() => {
-    if (!context) {
-      console.warn("Context is not available");
-      return;
-    }
-
+  // onMount(() => {
+  createEffect(() => {
     const compProxy: IGridHeaderComp = {
       addOrRemoveCssClass: (name, on) =>
         setCssClasses(getCssClasses().setClass(name, on)),
@@ -38,11 +35,6 @@ const GridHeaderComp = () => {
     };
 
     const gridHeaderCtrl = new GridHeaderCtrl();
-    if (!gridHeaderCtrl) {
-      console.error("GridHeaderCtrl is not available");
-      return;
-    }
-
     const ctrl = context.createBean(gridHeaderCtrl);
     ctrl.setComp(compProxy, eGui, eGui);
 
