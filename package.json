@@ -91,6 +91,7 @@
     "clean": "rimraf bundles dist",
     "build": "npx tsup",
     "build-prod": "npm run build",
+    "publish": "pnpm run build && pnpm publish --access restricted",
     "format": "prettier -w \"src/**/*.{js,ts,json,css,tsx,jsx}\" \"dev/**/*.{js,ts,json,css,tsx,jsx}\"",
     "update-deps": "taze -w && pnpm i",
     "typecheck": "tsc --noEmit"
