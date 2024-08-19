@@ -68,7 +68,7 @@ const RowContainerComp = (props: { name: RowContainerName }) => {
     rowCtrlsOrderedCopy = next;
   });
 
-  onMount(() => {
+  createEffect(() => {
     const compProxy: IRowContainerComp = {
       setHorizontalScroll: (horizontalScroll) => {
         if (eContainer) {
