@@ -122,6 +122,7 @@ const GridBodyComp = () => {
   //   };
   onMount(() => {
     if (!context) {
+      console.error("Context is not available");
       return;
     }
 

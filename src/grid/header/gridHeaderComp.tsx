@@ -1,11 +1,19 @@
 import { GridHeaderCtrl, IGridHeaderComp } from "ag-grid-community";
-import { createMemo, createSignal, onCleanup, onMount, useContext } from "solid-js";
+import {
+  createMemo,
+  createSignal,
+  onCleanup,
+  onMount,
+  useContext,
+} from "solid-js";
 import { BeansContext } from "../core/beansContext";
 import { CssClasses } from "../core/utils";
 import HeaderRowContainerComp from "./headerRowContainerComp";
 
 const GridHeaderComp = () => {
-  const [getCssClasses, setCssClasses] = createSignal<CssClasses>(new CssClasses());
+  const [getCssClasses, setCssClasses] = createSignal<CssClasses>(
+    new CssClasses()
+  );
   const [getHeight, setHeight] = createSignal<string>();
 
   const { context } = useContext(BeansContext);
@@ -19,11 +27,20 @@ const GridHeaderComp = () => {
 
   onMount(() => {
     const compProxy: IGridHeaderComp = {
-      addOrRemoveCssClass: (name, on) => setCssClasses(getCssClasses().setClass(name, on)),
+      addOrRemoveCssClass: (name, on) =>
+        setCssClasses(getCssClasses().setClass(name, on)),
       setHeightAndMinHeight: (height) => setHeight(height),
     };
 
-    const ctrl = context.createBean(new GridHeaderCtrl());
+    const gridHeaderCtrl = new GridHeaderCtrl();
+    if (!gridHeaderCtrl) {
+      console.error("GridHeaderCtrl is not available");
+      return;
+    } else {
+      console.log("GridHeaderCtrl is available", gridHeaderCtrl);
+    }
+
+    const ctrl = context.createBean(gridHeaderCtrl);
     ctrl.setComp(compProxy, eGui, eGui);
 
     destroyFuncs.push(() => context.destroyBean(ctrl));
