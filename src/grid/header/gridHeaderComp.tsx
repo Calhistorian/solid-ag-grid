@@ -26,6 +26,11 @@ const GridHeaderComp = () => {
   });
 
   onMount(() => {
+    if (!context) {
+      console.error("Context is not available");
+      return;
+    }
+
     const compProxy: IGridHeaderComp = {
       addOrRemoveCssClass: (name, on) =>
         setCssClasses(getCssClasses().setClass(name, on)),
@@ -36,8 +41,6 @@ const GridHeaderComp = () => {
     if (!gridHeaderCtrl) {
       console.error("GridHeaderCtrl is not available");
       return;
-    } else {
-      console.log("GridHeaderCtrl is available", gridHeaderCtrl);
     }
 
     const ctrl = context.createBean(gridHeaderCtrl);
