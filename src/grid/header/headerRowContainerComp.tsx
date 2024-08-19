@@ -18,11 +18,17 @@ import { CssClasses } from "../core/utils";
 import HeaderRowComp from "./headerRowComp";
 
 const HeaderRowContainerComp = (props: { pinned: ColumnPinnedType | null }) => {
-  const [getCssClasses, setCssClasses] = createSignal<CssClasses>(new CssClasses());
+  const [getCssClasses, setCssClasses] = createSignal<CssClasses>(
+    new CssClasses()
+  );
   const [getAriaHidden, setAriaHidden] = createSignal<true | false>(false);
-  const [getCenterContainerWidth, setCenterContainerWidth] = createSignal<string>();
-  const [getPinnedContainerWidth, setPinnedContainerWidth] = createSignal<string>();
-  const [getHeaderRowCtrls, setHeaderRowCtrls] = createSignal<HeaderRowCtrl[]>([]);
+  const [getCenterContainerWidth, setCenterContainerWidth] =
+    createSignal<string>();
+  const [getPinnedContainerWidth, setPinnedContainerWidth] =
+    createSignal<string>();
+  const [getHeaderRowCtrls, setHeaderRowCtrls] = createSignal<HeaderRowCtrl[]>(
+    []
+  );
 
   const { context } = useContext(BeansContext);
   let eGui: HTMLDivElement;
@@ -39,6 +45,11 @@ const HeaderRowContainerComp = (props: { pinned: ColumnPinnedType | null }) => {
   });
 
   onMount(() => {
+    if (!context) {
+      console.error("Context is not available");
+      return;
+    }
+
     const compProxy: IHeaderRowContainerComp = {
       setDisplayed: (displayed) => {
         setCssClasses(getCssClasses().setClass("ag-hidden", !displayed));
@@ -63,7 +74,9 @@ const HeaderRowContainerComp = (props: { pinned: ColumnPinnedType | null }) => {
   const getClassName = createMemo(() => getCssClasses().toString());
 
   const insertRowsJsx = () => (
-    <For each={getHeaderRowCtrls()}>{(ctrl) => <HeaderRowComp ctrl={ctrl} />}</For>
+    <For each={getHeaderRowCtrls()}>
+      {(ctrl) => <HeaderRowComp ctrl={ctrl} />}
+    </For>
   );
 
   const eCenterContainerStyle = createMemo(() => ({
@@ -101,8 +114,16 @@ const HeaderRowContainerComp = (props: { pinned: ColumnPinnedType | null }) => {
         </div>
       )}
       {centre && (
-        <div ref={eGui!} class={"ag-header-viewport " + getClassName()} role="presentation">
-          <div class="ag-header-container" role="rowgroup" style={eCenterContainerStyle()}>
+        <div
+          ref={eGui!}
+          class={"ag-header-viewport " + getClassName()}
+          role="presentation"
+        >
+          <div
+            class="ag-header-container"
+            role="rowgroup"
+            style={eCenterContainerStyle()}
+          >
             {insertRowsJsx()}
           </div>
         </div>
