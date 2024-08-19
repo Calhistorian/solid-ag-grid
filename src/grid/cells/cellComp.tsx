@@ -5,7 +5,6 @@ import {
   ICellComp,
   ICellEditor,
   ICellRenderer,
-  _,
 } from "ag-grid-community";
 import { createEffect, createMemo, createSignal, For, onMount } from "solid-js";
 import { EditDetails, RenderDetails } from "./common";
@@ -15,41 +14,59 @@ import ShowRenderDetails from "./showRenderDetails";
 const checkCellEditorDeprecations = (
   popup: boolean,
   cellEditor: ICellEditor,
-  cellCtrl: CellCtrl,
+  cellCtrl: CellCtrl
 ) => {
   const col = cellCtrl.getColumn();
 
   // cellEditor is written to be a popup editor, however colDef.cellEditorPopup is not set
   if (!popup && cellEditor.isPopup && cellEditor.isPopup()) {
     const msg = `AG Grid: Found an issue in column ${col.getColId()}. If using SolidJS, specify an editor is a popup using colDef.cellEditorPopup=true. AG Grid SolidJS cannot depend on the editor component specifying if it's in a popup (via the isPopup() method on the editor), as SolidJS needs to know this information BEFORE the component is created.`;
-    _.doOnce(() => console.warn(msg), "jsEditorComp-isPopup-" + cellCtrl.getColumn().getColId());
+    // _.doOnce(
+    //   () => console.warn(msg),
+    //   "jsEditorComp-isPopup-" + cellCtrl.getColumn().getColId()
+    // );
+    console.warn(msg);
   }
 
   // cellEditor is a popup and is trying to position itself the deprecated way
-  if (popup && cellEditor.getPopupPosition && cellEditor.getPopupPosition() != null) {
+  if (
+    popup &&
+    cellEditor.getPopupPosition &&
+    cellEditor.getPopupPosition() != null
+  ) {
     const msg = `AG Grid: Found an issue in column ${col.getColId()}. If using SolidJS, specify an editor popup position using colDef.cellEditorPopupPosition=true. AG Grid SolidJS cannot depend on the editor component specifying it's position (via the getPopupPosition() method on the editor), as SolidJS needs to know this information BEFORE the component is created.`;
-    _.doOnce(
-      () => console.warn(msg),
-      "jsEditorComp-getPopupPosition-" + cellCtrl.getColumn().getColId(),
-    );
+    // _.doOnce(
+    //   () => console.warn(msg),
+    //   "jsEditorComp-getPopupPosition-" + cellCtrl.getColumn().getColId()
+    // );
+    console.warn(msg);
   }
 };
 
-const CellComp = (props: { cellCtrl: CellCtrl; printLayout: boolean; editingRow: boolean }) => {
+const CellComp = (props: {
+  cellCtrl: CellCtrl;
+  printLayout: boolean;
+  editingRow: boolean;
+}) => {
   const { cellCtrl, printLayout, editingRow } = props;
 
   const [renderDetails, setRenderDetails] = createSignal<RenderDetails>();
   const [editDetails, setEditDetails] = createSignal<EditDetails>();
 
   let renderCompVersion = 0;
-  const [renderCompVersionList, setRenderCompVersionList] = createSignal<number[]>([
-    renderCompVersion,
-  ]);
+  const [renderCompVersionList, setRenderCompVersionList] = createSignal<
+    number[]
+  >([renderCompVersion]);
 
   const [userStyles, setUserStyles] = createSignal<CellStyle>();
 
-  const [tabIndex, setTabIndex] = createSignal<number | undefined>(cellCtrl.getTabIndex());
-  const [colId, setColId] = createSignal<string>(cellCtrl.getColumnIdSanitised());
+  // TODO: fix this -- in later versions of ag-grid for React (32.1.0) this is not needed, so removing here
+  // const [tabIndex, setTabIndex] = createSignal<number | undefined>(
+  //   cellCtrl.getTabIndex()
+  // );
+  const [colId, setColId] = createSignal<string>(
+    cellCtrl.getColumnIdSanitised()
+  );
   const [selectionCheckboxId, setSelectionCheckboxId] = createSignal<string>();
   const [includeSelection, setIncludeSelection] = createSignal<boolean>(false);
   const [includeRowDrag, setIncludeRowDrag] = createSignal<boolean>(false);
@@ -96,7 +113,9 @@ const CellComp = (props: { cellCtrl: CellCtrl; printLayout: boolean; editingRow:
   const cssClassManager = new CssClassManager(() => eGui);
 
   const showTools = createMemo(
-    () => renderDetails() != null && (includeSelection() || includeDndSource() || includeRowDrag()),
+    () =>
+      renderDetails() != null &&
+      (includeSelection() || includeDndSource() || includeRowDrag())
   );
   const showCellWrapper = createMemo(() => forceWrapper || showTools());
 
@@ -108,7 +127,8 @@ const CellComp = (props: { cellCtrl: CellCtrl; printLayout: boolean; editingRow:
     }
 
     const compProxy: ICellComp = {
-      addOrRemoveCssClass: (name, on) => cssClassManager.addOrRemoveCssClass(name, on),
+      addOrRemoveCssClass: (name, on) =>
+        cssClassManager.addOrRemoveCssClass(name, on),
       setUserStyles: (styles: CellStyle) => setUserStyles(styles),
       getFocusableElement: () => eGui,
       setIncludeSelection: (include) => setIncludeSelection(include),
@@ -117,7 +137,8 @@ const CellComp = (props: { cellCtrl: CellCtrl; printLayout: boolean; editingRow:
 
       getCellEditor: () => cellEditor,
       getCellRenderer: () => (cellRenderer ? cellRenderer : null),
-      getParentOfValue: () => (eCellValue ? eCellValue : eCellWrapper ? eCellWrapper : eGui),
+      getParentOfValue: () =>
+        eCellValue ? eCellValue : eCellWrapper ? eCellWrapper : eGui,
 
       setRenderDetails: (compDetails, value, force) => {
         setRenderDetails({
@@ -153,10 +174,19 @@ const CellComp = (props: { cellCtrl: CellCtrl; printLayout: boolean; editingRow:
     const isPopup = isEditing && !!editDetails()?.popup;
 
     cssClassManager.addOrRemoveCssClass("ag-cell-value", !showCellWrapper());
-    cssClassManager.addOrRemoveCssClass("ag-cell-inline-editing", isEditing && !isPopup);
-    cssClassManager.addOrRemoveCssClass("ag-cell-popup-editing", isEditing && isPopup);
-    cssClassManager.addOrRemoveCssClass("ag-cell-not-inline-editing", !isEditing || isPopup);
-    cellCtrl.getRowCtrl()?.setInlineEditingCss(isEditing);
+    cssClassManager.addOrRemoveCssClass(
+      "ag-cell-inline-editing",
+      isEditing && !isPopup
+    );
+    cssClassManager.addOrRemoveCssClass(
+      "ag-cell-popup-editing",
+      isEditing && isPopup
+    );
+    cssClassManager.addOrRemoveCssClass(
+      "ag-cell-not-inline-editing",
+      !isEditing || isPopup
+    );
+    cellCtrl.getRowCtrl()?.setInlineEditingCss();
   });
 
   // we only do refreshing for JS Comps. for SolidJS, the props will change for the cell renderer.
@@ -164,7 +194,9 @@ const CellComp = (props: { cellCtrl: CellCtrl; printLayout: boolean; editingRow:
   createEffect(() => {
     const details = renderDetails();
     const isJsCellRenderer =
-      details != null && details.compDetails != null && !details.compDetails.componentFromFramework;
+      details != null &&
+      details.compDetails != null &&
+      !details.compDetails.componentFromFramework;
     if (!isJsCellRenderer) {
       readyForRefresh = false;
       return;
@@ -179,6 +211,7 @@ const CellComp = (props: { cellCtrl: CellCtrl; printLayout: boolean; editingRow:
     }
 
     const params = details.compDetails!.params;
+    // @ts-expect-error -- TODO: fix this -- cellRenderer seems to not be receiving the correct type from above
     const result = cellRenderer.refresh ? cellRenderer.refresh(params) : false;
     if (result != true) {
       // increasing the render key forces a new instance of ShowRenderDetails,
@@ -234,7 +267,8 @@ const CellComp = (props: { cellCtrl: CellCtrl; printLayout: boolean; editingRow:
     <div
       ref={eGui!}
       style={userStyles()}
-      tabIndex={tabIndex()}
+      // tabIndex={tabIndex()}
+      // @ts-expect-error -- TODO: fix this -- aria roles are specific defined strings, but getCellAriaRole returns a string
       role={cellCtrl.getCellAriaRole()}
       col-id={colId()}
     >

@@ -8,7 +8,14 @@ import {
   RowStyle,
   UserCompDetails,
 } from "ag-grid-community";
-import { createEffect, createMemo, createSignal, For, onCleanup, onMount } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  onCleanup,
+  onMount,
+} from "solid-js";
 import CellComp from "../cells/cellComp";
 import UserComp from "../userComps/userComp";
 
@@ -20,7 +27,7 @@ interface CellCtrls {
 const maintainOrderOnColumns = (
   prev: CellCtrls,
   next: CellCtrl[],
-  domOrder: boolean,
+  domOrder: boolean
 ): CellCtrls => {
   if (domOrder) {
     const res: CellCtrls = { list: next, instanceIdMap: new Map() };
@@ -62,28 +69,32 @@ const maintainOrderOnColumns = (
   return res;
 };
 
-const RowComp = (params: { rowCtrl: RowCtrl; containerType: RowContainerType }) => {
+const RowComp = (params: {
+  rowCtrl: RowCtrl;
+  containerType: RowContainerType;
+}) => {
   const { rowCtrl, containerType } = params;
 
   const [getRowIndex, setRowIndex] = createSignal<string>();
   const [getRowId, setRowId] = createSignal<string>();
   const [getRowBusinessKey, setRowBusinessKey] = createSignal<string>();
-  const [getTabIndex, setTabIndex] = createSignal<number | undefined>(rowCtrl.getTabIndex());
+  // const [getTabIndex, setTabIndex] = createSignal<number | undefined>(rowCtrl.getTabIndex());
   const [getUserStyles, setUserStyles] = createSignal<RowStyle>();
   const [getCellCtrls, setCellCtrls] = createSignal<CellCtrls>({
     list: [],
     instanceIdMap: new Map(),
   });
-  const [getFullWidthCompDetails, setFullWidthCompDetails] = createSignal<UserCompDetails>();
+  const [getFullWidthCompDetails, setFullWidthCompDetails] =
+    createSignal<UserCompDetails>();
   const [getDomOrder, setDomOrder] = createSignal<boolean>(false);
 
   // these styles have initial values, so element is placed into the DOM with them,
   // rather than an transition getting applied.
   const [getTop, setTop] = createSignal<string | undefined>(
-    rowCtrl.getInitialRowTop(containerType),
+    rowCtrl.getInitialRowTop(containerType)
   );
   const [getTransform, setTransform] = createSignal<string | undefined>(
-    rowCtrl.getInitialTransform(containerType),
+    rowCtrl.getInitialTransform(containerType)
   );
 
   let eGui: HTMLDivElement;
@@ -141,7 +152,8 @@ const RowComp = (params: { rowCtrl: RowCtrl; containerType: RowContainerType }) 
 
       // i found using React for managing classes at the row level was to slow, as modifying classes caused a lot of
       // React code to execute, so avoiding React for managing CSS Classes made the grid go much faster.
-      addOrRemoveCssClass: (name, on) => cssClassManager.addOrRemoveCssClass(name, on),
+      addOrRemoveCssClass: (name, on) =>
+        cssClassManager.addOrRemoveCssClass(name, on),
 
       setDomOrder: (domOrder) => setDomOrder(domOrder),
       setRowIndex: (value) => setRowIndex(value),
@@ -151,7 +163,9 @@ const RowComp = (params: { rowCtrl: RowCtrl; containerType: RowContainerType }) 
       // if we don't maintain the order, then cols will be ripped out and into the dom
       // when cols reordered, which would stop the CSS transitions from working
       setCellCtrls: (next) =>
-        setCellCtrls(maintainOrderOnColumns(getCellCtrls(), next, getDomOrder())),
+        setCellCtrls(
+          maintainOrderOnColumns(getCellCtrls(), next, getDomOrder())
+        ),
       showFullWidth: (compDetails) => setFullWidthCompDetails(compDetails),
       getFullWidthCellRenderer: () => fullWidthCompRef,
       refreshFullWidth: (getUpdatedParams) => {
@@ -202,7 +216,7 @@ const RowComp = (params: { rowCtrl: RowCtrl; containerType: RowContainerType }) 
       row-index={getRowIndex()}
       row-id={getRowId()}
       row-business-key={getRowBusinessKey()}
-      tabIndex={getTabIndex()}
+      // tabIndex={getTabIndex()}
     >
       {isShowFullWidth() && showFullWidthJsx()}
       {isShowCells() && showCellsJsx()}

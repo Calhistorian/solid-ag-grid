@@ -1,4 +1,4 @@
-import { Beans } from "ag-grid-community";
+import { BeanCollection } from "ag-grid-community";
 import { createContext } from "solid-js";
 
-export const BeansContext = createContext<Beans>({} as Beans);
+export const BeansContext = createContext<BeanCollection>({} as BeanCollection);

@@ -1,5 +1,5 @@
 import {
-  getRowContainerTypeForName,
+  _getRowContainerOptions,
   IRowContainerComp,
   RowContainerCtrl,
   RowContainerName,
@@ -27,21 +27,25 @@ const RowContainerComp = (props: { name: RowContainerName }) => {
   const [domOrder, setDomOrder] = createSignal<boolean>(false);
 
   const { name } = props;
-  const containerType = createMemo(() => getRowContainerTypeForName(name));
+  const containerOptions = createMemo(() => _getRowContainerOptions(name));
 
   let eViewport: HTMLDivElement;
   let eContainer: HTMLDivElement;
 
-  const cssClasses = createMemo(() => RowContainerCtrl.getRowContainerCssClasses(name));
-  const viewportClasses = createMemo(() => classesList(cssClasses().viewport));
-  const containerClasses = createMemo(() => classesList(cssClasses().container));
+  // const cssClasses = createMemo(() =>
+  //   RowContainerCtrl.getRowContainerCssClasses(name)
+  // );
+  // const viewportClasses = createMemo(() => classesList(cssClasses().viewport));
+  // const containerClasses = createMemo(() =>
+  //   classesList(cssClasses().container)
+  // );
 
   // no need to useMemo for boolean types
   const centerTemplate =
-    name === RowContainerName.CENTER ||
-    name === RowContainerName.TOP_CENTER ||
-    name === RowContainerName.BOTTOM_CENTER ||
-    name === RowContainerName.STICKY_TOP_CENTER;
+    name === "center" ||
+    name === "topCenter" ||
+    name === "bottomCenter" ||
+    name === "stickyTopCenter";
 
   // if domOrder=true, then we just copy rowCtrls into rowCtrlsOrdered observing order,
   // however if false, then we need to keep the order as they are in the dom, otherwise rowAnimation breaks
@@ -66,12 +70,22 @@ const RowContainerComp = (props: { name: RowContainerName }) => {
 
   onMount(() => {
     const compProxy: IRowContainerComp = {
+      setHorizontalScroll: (horizontalScroll) => {
+        if (eContainer) {
+          eContainer.style.overflowX = horizontalScroll ? "auto" : "hidden";
+        }
+      },
       setViewportHeight: setViewportHeight,
       setRowCtrls: ({ rowCtrls }) => setRowCtrls(rowCtrls),
       setDomOrder: (domOrder) => setDomOrder(domOrder),
       setContainerWidth: (width) => {
         if (eContainer) {
           eContainer.style.width = width;
+        }
+      },
+      setOffsetTop: (offsetTop) => {
+        if (eContainer) {
+          eContainer.style.top = offsetTop;
         }
       },
     };
@@ -87,9 +101,14 @@ const RowContainerComp = (props: { name: RowContainerName }) => {
   }));
 
   const buildContainer = () => (
-    <div class={containerClasses()} ref={eContainer} role={"rowgroup"}>
+    <div ref={eContainer} role={"rowgroup"}>
       <For each={rowCtrlsOrdered()}>
-        {(rowCtrl, i) => <RowComp rowCtrl={rowCtrl} containerType={containerType()}></RowComp>}
+        {(rowCtrl, i) => (
+          <RowComp
+            rowCtrl={rowCtrl}
+            containerType={containerOptions().type}
+          ></RowComp>
+        )}
       </For>
     </div>
   );
@@ -97,7 +116,7 @@ const RowContainerComp = (props: { name: RowContainerName }) => {
   return (
     <>
       {centerTemplate ? (
-        <div class={viewportClasses()} ref={eViewport!} role="presentation" style={viewportStyle()}>
+        <div ref={eViewport!} role="presentation" style={viewportStyle()}>
           {buildContainer()}
         </div>
       ) : (

@@ -1,4 +1,11 @@
-import { Context, FocusService, GridCtrl, IGridComp } from "ag-grid-community";
+import {
+  BeanCollection,
+  Context,
+  FocusableContainer,
+  FocusService,
+  GridCtrl,
+  IGridComp,
+} from "ag-grid-community";
 import { createMemo, createSignal, onCleanup, onMount } from "solid-js";
 import { BeansContext } from "./core/beansContext";
 import { classesList } from "./core/utils";
@@ -14,7 +21,7 @@ const GridComp = (props: { context: Context; class?: string }) => {
   const [initialised, setInitialised] = createSignal<boolean>(false);
 
   const { context } = props;
-  const beans = context.getBean("beans");
+  const beans = context.getBean("beans") as BeanCollection;
 
   let tabGuardRef: TabGuardRef;
   const setTabGuardRef = (newRef: TabGuardRef) => {
@@ -34,62 +41,126 @@ const GridComp = (props: { context: Context; class?: string }) => {
     destroyFuncs.length = 0;
   });
 
+  // const tabGuardReady = () => {
+  //   const beansToDestroy: any[] = [];
+
+  //   const { agStackComponentsRegistry } = beans;
+
+  //   const HeaderDropZonesClass = agStackComponentsRegistry.getComponentClass(
+  //     "AG-GRID-HEADER-DROP-ZONES",
+  //   );
+  //   const SideBarClass = agStackComponentsRegistry.getComponentClass("AG-SIDE-BAR");
+  //   const StatusBarClass = agStackComponentsRegistry.getComponentClass("AG-STATUS-BAR");
+  //   const WatermarkClass = agStackComponentsRegistry.getComponentClass("AG-WATERMARK");
+  //   const PaginationClass = agStackComponentsRegistry.getComponentClass("AG-PAGINATION");
+  //   const additionalEls: HTMLDivElement[] = [];
+
+  //   if (gridCtrl.showDropZones() && HeaderDropZonesClass) {
+  //     const headerDropZonesComp = context.createBean(new HeaderDropZonesClass());
+  //     const el = headerDropZonesComp.getGui();
+  //     eGui.insertAdjacentElement("afterbegin", el);
+  //     additionalEls.push(el);
+  //     beansToDestroy.push(headerDropZonesComp);
+  //   }
+
+  //   if (gridCtrl.showSideBar() && SideBarClass) {
+  //     const sideBarComp = context.createBean(new SideBarClass());
+  //     const el = sideBarComp.getGui();
+  //     const bottomTabGuard = eBody.querySelector(".ag-tab-guard-bottom");
+  //     if (bottomTabGuard) {
+  //       bottomTabGuard.insertAdjacentElement("beforebegin", el);
+  //       additionalEls.push(el);
+  //     }
+
+  //     beansToDestroy.push(sideBarComp);
+  //   }
+
+  //   if (gridCtrl.showStatusBar() && StatusBarClass) {
+  //     const statusBarComp = context.createBean(new StatusBarClass());
+  //     const el = statusBarComp.getGui();
+  //     eGui.insertAdjacentElement("beforeend", el);
+  //     additionalEls.push(el);
+  //     beansToDestroy.push(statusBarComp);
+  //   }
+
+  //   if (PaginationClass) {
+  //     const paginationComp = context.createBean(new PaginationClass());
+  //     const el = paginationComp.getGui();
+  //     eGui.insertAdjacentElement("beforeend", el);
+  //     additionalEls.push(el);
+  //     beansToDestroy.push(paginationComp);
+  //   }
+
+  //   if (gridCtrl.showWatermark() && WatermarkClass) {
+  //     const watermarkComp = context.createBean(new WatermarkClass());
+  //     const el = watermarkComp.getGui();
+  //     eGui.insertAdjacentElement("beforeend", el);
+  //     additionalEls.push(el);
+  //     beansToDestroy.push(watermarkComp);
+  //   }
+
+  //   destroyFuncs.push(() => {
+  //     context.destroyBeans(beansToDestroy);
+  //     additionalEls.forEach((el) => {
+  //       if (el.parentElement) {
+  //         el.parentElement.removeChild(el);
+  //       }
+  //     });
+  //   });
+  // };
+
   const tabGuardReady = () => {
     const beansToDestroy: any[] = [];
+    const additionalEls: HTMLElement[] = [];
 
-    const { agStackComponentsRegistry } = beans;
+    const {
+      watermarkSelector,
+      paginationSelector,
+      sideBarSelector,
+      statusBarSelector,
+      gridHeaderDropZonesSelector,
+    } = gridCtrl.getOptionalSelectors();
 
-    const HeaderDropZonesClass = agStackComponentsRegistry.getComponentClass(
-      "AG-GRID-HEADER-DROP-ZONES",
-    );
-    const SideBarClass = agStackComponentsRegistry.getComponentClass("AG-SIDE-BAR");
-    const StatusBarClass = agStackComponentsRegistry.getComponentClass("AG-STATUS-BAR");
-    const WatermarkClass = agStackComponentsRegistry.getComponentClass("AG-WATERMARK");
-    const PaginationClass = agStackComponentsRegistry.getComponentClass("AG-PAGINATION");
-    const additionalEls: HTMLDivElement[] = [];
+    const addComponentToDom = (componentClass: new () => any) => {
+      const comp = context.createBean(new componentClass());
+      const el = comp.getGui();
+      eGui.insertAdjacentElement("beforeend", el);
+      additionalEls.push(el);
+      beansToDestroy.push(comp);
+      return comp;
+    };
 
-    if (gridCtrl.showDropZones() && HeaderDropZonesClass) {
-      const headerDropZonesComp = context.createBean(new HeaderDropZonesClass());
+    if (gridHeaderDropZonesSelector) {
+      const headerDropZonesComp = context.createBean(
+        new gridHeaderDropZonesSelector.component()
+      );
       const el = headerDropZonesComp.getGui();
       eGui.insertAdjacentElement("afterbegin", el);
       additionalEls.push(el);
       beansToDestroy.push(headerDropZonesComp);
     }
 
-    if (gridCtrl.showSideBar() && SideBarClass) {
-      const sideBarComp = context.createBean(new SideBarClass());
+    if (sideBarSelector) {
+      const sideBarComp = context.createBean(new sideBarSelector.component());
       const el = sideBarComp.getGui();
       const bottomTabGuard = eBody.querySelector(".ag-tab-guard-bottom");
       if (bottomTabGuard) {
         bottomTabGuard.insertAdjacentElement("beforebegin", el);
         additionalEls.push(el);
       }
-
       beansToDestroy.push(sideBarComp);
     }
 
-    if (gridCtrl.showStatusBar() && StatusBarClass) {
-      const statusBarComp = context.createBean(new StatusBarClass());
-      const el = statusBarComp.getGui();
-      eGui.insertAdjacentElement("beforeend", el);
-      additionalEls.push(el);
-      beansToDestroy.push(statusBarComp);
+    if (statusBarSelector) {
+      addComponentToDom(statusBarSelector.component);
     }
 
-    if (PaginationClass) {
-      const paginationComp = context.createBean(new PaginationClass());
-      const el = paginationComp.getGui();
-      eGui.insertAdjacentElement("beforeend", el);
-      additionalEls.push(el);
-      beansToDestroy.push(paginationComp);
+    if (paginationSelector) {
+      addComponentToDom(paginationSelector.component);
     }
 
-    if (gridCtrl.showWatermark() && WatermarkClass) {
-      const watermarkComp = context.createBean(new WatermarkClass());
-      const el = watermarkComp.getGui();
-      eGui.insertAdjacentElement("beforeend", el);
-      additionalEls.push(el);
-      beansToDestroy.push(watermarkComp);
+    if (watermarkSelector) {
+      addComponentToDom(watermarkSelector.component);
     }
 
     destroyFuncs.push(() => {
@@ -114,20 +185,23 @@ const GridComp = (props: { context: Context; class?: string }) => {
       },
       updateLayoutClasses: setLayoutClass,
       getFocusableContainers: () => {
-        const els: HTMLElement[] = [];
+        const containers: FocusableContainer[] = [];
 
+        // Query for the root element of the grid body
         const gridBodyCompEl = eGui.querySelector(".ag-root");
-        const sideBarEl = eGui.querySelector(".ag-side-bar:not(.ag-hidden)");
-
         if (gridBodyCompEl) {
-          els.push(gridBodyCompEl as HTMLElement);
+          containers.push({ getGui: () => gridBodyCompEl as HTMLElement });
         }
 
-        if (sideBarEl) {
-          els.push(sideBarEl as HTMLElement);
-        }
+        // Iterate over the focusable containers to check if they are displayed
+        containers.forEach((comp) => {
+          // if (comp.isDisplayed()) {
+          if (comp) {
+            containers.push(comp);
+          }
+        });
 
-        return els;
+        return containers;
       },
       setCursor,
       setUserSelect,
@@ -138,10 +212,16 @@ const GridComp = (props: { context: Context; class?: string }) => {
   });
 
   const cssClasses = createMemo(() =>
-    classesList("ag-root-wrapper", rtlClass(), keyboardFocusClass(), layoutClass(), props.class),
+    classesList(
+      "ag-root-wrapper",
+      rtlClass(),
+      keyboardFocusClass(),
+      layoutClass(),
+      props.class
+    )
   );
   const bodyCssClasses = createMemo(() =>
-    classesList("ag-root-wrapper-body", "ag-focus-managed", layoutClass()),
+    classesList("ag-root-wrapper-body", "ag-focus-managed", layoutClass())
   );
 
   const topStyle: any = createMemo(() => ({

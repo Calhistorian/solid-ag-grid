@@ -84,21 +84,21 @@
   "scripts": {
     "dev": "vite serve dev",
     "clean": "rimraf bundles dist",
-    "build": "npx gulp && tsup",
+    "build": "npx tsup",
     "build-prod": "npm run build",
     "format": "prettier -w \"src/**/*.{js,ts,json,css,tsx,jsx}\" \"dev/**/*.{js,ts,json,css,tsx,jsx}\"",
     "update-deps": "taze -w && pnpm i",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "ag-grid-community": "31.1.1"
+    "ag-grid-community": "32.1.0"
   },
   "peerDependencies": {
     "solid-js": ">=1.0.0"
   },
   "devDependencies": {
-    "ag-grid-community": "31.1.1",
-    "ag-grid-enterprise": "31.1.1",
+    "ag-grid-community": "32.1.0",
+    "ag-grid-enterprise": "32.1.0",
     "prettier": "3.2.5",
     "solid-js": "^1.8.16",
     "taze": "^0.7.6",

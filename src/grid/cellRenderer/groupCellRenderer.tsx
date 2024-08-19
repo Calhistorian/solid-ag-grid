@@ -1,9 +1,8 @@
 import {
-  GroupCellRendererCtrl,
   GroupCellRendererParams,
   IGroupCellRenderer,
+  IGroupCellRendererCtrl,
   UserCompDetails,
-  _,
 } from "ag-grid-community";
 import { createMemo, createSignal, onMount, useContext } from "solid-js";
 import { BeansContext } from "../core/beansContext";
@@ -11,7 +10,8 @@ import { CssClasses } from "../core/utils";
 import UserComp from "../userComps/userComp";
 
 const GroupCellRenderer = (props: GroupCellRendererParams) => {
-  const context = useContext(BeansContext).context!;
+  // const context = useContext(BeansContext).context!;
+  const { context, ctrlsFactory } = useContext(BeansContext);
 
   let eGui: HTMLElement;
   let eValueRef: HTMLElement;
@@ -20,19 +20,19 @@ const GroupCellRenderer = (props: GroupCellRendererParams) => {
   let eContractedRef: HTMLElement;
   let role: any = "gridcell";
 
-  const [getInnerCompDetails, setInnerCompDetails] = createSignal<UserCompDetails>();
+  const [getInnerCompDetails, setInnerCompDetails] =
+    createSignal<UserCompDetails>();
   const [getChildCount, setChildCount] = createSignal<string>();
   const [getValue, setValue] = createSignal<any>();
-  const [getCssClasses, setCssClasses] = createSignal<CssClasses>(new CssClasses());
-  const [getExpandedCssClasses, setExpandedCssClasses] = createSignal<CssClasses>(
-    new CssClasses("ag-hidden"),
+  const [getCssClasses, setCssClasses] = createSignal<CssClasses>(
+    new CssClasses()
   );
-  const [getContractedCssClasses, setContractedCssClasses] = createSignal<CssClasses>(
-    new CssClasses("ag-hidden"),
-  );
-  const [getCheckboxCssClasses, setCheckboxCssClasses] = createSignal<CssClasses>(
-    new CssClasses("ag-invisible"),
-  );
+  const [getExpandedCssClasses, setExpandedCssClasses] =
+    createSignal<CssClasses>(new CssClasses("ag-hidden"));
+  const [getContractedCssClasses, setContractedCssClasses] =
+    createSignal<CssClasses>(new CssClasses("ag-hidden"));
+  const [getCheckboxCssClasses, setCheckboxCssClasses] =
+    createSignal<CssClasses>(new CssClasses("ag-invisible"));
 
   (props as any).ref(() => ({
     // force new instance when grid tries to refresh
@@ -45,20 +45,30 @@ const GroupCellRenderer = (props: GroupCellRendererParams) => {
     const compProxy: IGroupCellRenderer = {
       setInnerRenderer: (details, valueToDisplay) => {
         setInnerCompDetails(details);
-        const escapedValue = _.escapeString(valueToDisplay, true);
-        setValue(escapedValue);
+        setValue(valueToDisplay);
       },
       setChildCount: (count) => setChildCount(count),
-      addOrRemoveCssClass: (name, on) => setCssClasses(getCssClasses().setClass(name, on)),
+      addOrRemoveCssClass: (name, on) =>
+        setCssClasses(getCssClasses().setClass(name, on)),
       setContractedDisplayed: (displayed) =>
-        setContractedCssClasses(getContractedCssClasses().setClass("ag-hidden", !displayed)),
+        setContractedCssClasses(
+          getContractedCssClasses().setClass("ag-hidden", !displayed)
+        ),
       setExpandedDisplayed: (displayed) =>
-        setExpandedCssClasses(getExpandedCssClasses().setClass("ag-hidden", !displayed)),
+        setExpandedCssClasses(
+          getExpandedCssClasses().setClass("ag-hidden", !displayed)
+        ),
       setCheckboxVisible: (visible) =>
-        setCheckboxCssClasses(getCheckboxCssClasses().setClass("ag-invisible", !visible)),
+        setCheckboxCssClasses(
+          getCheckboxCssClasses().setClass("ag-invisible", !visible)
+        ),
     };
 
-    const ctrl = context.createBean(new GroupCellRendererCtrl());
+    // const ctrl = context.createBean(new GroupCellRendererCtrl());
+    const groupCellRendererCtrl = ctrlsFactory.getInstance(
+      "groupCellRendererCtrl"
+    ) as IGroupCellRendererCtrl;
+    const ctrl = context.createBean(groupCellRendererCtrl);
     ctrl.init(
       compProxy,
       eGui,
@@ -66,7 +76,7 @@ const GroupCellRenderer = (props: GroupCellRendererParams) => {
       eExpandedRef,
       eContractedRef,
       GroupCellRenderer,
-      props,
+      props
     );
     eGui.setAttribute("role", ctrl.getCellAriaRole());
     role = ctrl.getCellAriaRole();
@@ -76,27 +86,35 @@ const GroupCellRenderer = (props: GroupCellRendererParams) => {
     };
   });
 
-  const getClassName = createMemo(() => `ag-cell-wrapper ${getCssClasses().toString()}`);
+  const getClassName = createMemo(
+    () => `ag-cell-wrapper ${getCssClasses().toString()}`
+  );
   const getExpandedClassName = createMemo(
-    () => `ag-group-expanded ${getExpandedCssClasses().toString()}`,
+    () => `ag-group-expanded ${getExpandedCssClasses().toString()}`
   );
   const getContractedClassName = createMemo(
-    () => `ag-group-contracted ${getContractedCssClasses().toString()}`,
+    () => `ag-group-contracted ${getContractedCssClasses().toString()}`
   );
   const getCheckboxClassName = createMemo(
-    () => `ag-group-checkbox ${getCheckboxCssClasses().toString()}`,
+    () => `ag-group-checkbox ${getCheckboxCssClasses().toString()}`
   );
 
   const isShowUserComp = () => getInnerCompDetails() != null;
   const isShowValue = () => getInnerCompDetails() == null && getValue() != null;
 
   return (
-    <span class={getClassName()} ref={eGui!} {...(!props.colDef ? { role } : {})}>
+    <span
+      class={getClassName()}
+      ref={eGui!}
+      {...(!props.colDef ? { role } : {})}
+    >
       <span class={getExpandedClassName()} ref={eExpandedRef!}></span>
       <span class={getContractedClassName()} ref={eContractedRef!}></span>
       <span class={getCheckboxClassName()} ref={eCheckboxRef!}></span>
       <span class="ag-group-value" ref={eValueRef!}>
-        {isShowUserComp() && <UserComp compDetails={getInnerCompDetails()!}></UserComp>}
+        {isShowUserComp() && (
+          <UserComp compDetails={getInnerCompDetails()!}></UserComp>
+        )}
         {isShowValue() && <>{getValue()}</>}
       </span>
       <span class="ag-group-child-count">{getChildCount()}</span>

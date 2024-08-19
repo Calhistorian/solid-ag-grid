@@ -13,23 +13,31 @@ const DetailCellRenderer = (props: IDetailCellRendererParams) => {
   const {
     ctrlsFactory,
     context,
-    gridOptionsService,
+    editService,
+    gos,
     resizeObserverService,
-    clientSideRowModel,
-    serverSideRowModel,
+    rowModelHelperService,
+    rowModel,
   } = useContext(BeansContext);
 
-  const [getCssClasses, setCssClasses] = createSignal<CssClasses>(new CssClasses());
-  const [getGridCssClasses, setGridCssClasses] = createSignal<CssClasses>(new CssClasses());
-  const [getDetailGridOptions, setDetailGridOptions] = createSignal<GridOptions>();
+  const [getCssClasses, setCssClasses] = createSignal<CssClasses>(
+    new CssClasses()
+  );
+  const [getGridCssClasses, setGridCssClasses] = createSignal<CssClasses>(
+    new CssClasses()
+  );
+  const [getDetailGridOptions, setDetailGridOptions] =
+    createSignal<GridOptions>();
   const [getDetailRowData, setDetailRowData] = createSignal<any[]>();
 
   let ctrl: IDetailCellRendererCtrl;
   let eGuiRef: HTMLDivElement;
 
-  const getCssClassesStr = createMemo(() => getCssClasses().toString() + " ag-details-row");
+  const getCssClassesStr = createMemo(
+    () => getCssClasses().toString() + " ag-details-row"
+  );
   const getGridCssClassesStr = createMemo(
-    () => getGridCssClasses().toString() + " ag-details-grid",
+    () => getGridCssClasses().toString() + " ag-details-grid"
   );
 
   (props as any).ref(() => ({
@@ -42,7 +50,7 @@ const DetailCellRenderer = (props: IDetailCellRendererParams) => {
   onMount(() => {
     if (props.template && typeof props.template === "string") {
       console.warn(
-        "AG Grid: detailCellRendererParams.template is not supported by Solid - this only works with frameworks that work against String templates. To change the template, please provide your own Solid Detail Cell Renderer.",
+        "AG Grid: detailCellRendererParams.template is not supported by Solid - this only works with frameworks that work against String templates. To change the template, please provide your own Solid Detail Cell Renderer."
       );
     }
 
@@ -56,7 +64,9 @@ const DetailCellRenderer = (props: IDetailCellRendererParams) => {
       getGui: () => eGuiRef,
     };
 
-    ctrl = ctrlsFactory.getInstance("detailCellRenderer") as IDetailCellRendererCtrl;
+    ctrl = ctrlsFactory.getInstance(
+      "detailCellRenderer"
+    ) as IDetailCellRendererCtrl;
     if (!ctrl) {
       return;
     } // should never happen, means master/detail module not loaded
@@ -66,7 +76,7 @@ const DetailCellRenderer = (props: IDetailCellRendererParams) => {
 
     let resizeObserverDestroyFunc: () => void;
 
-    if (gridOptionsService.get("detailRowAutoHeight")) {
+    if (gos.get("detailRowAutoHeight")) {
       const checkRowSizeFunc = () => {
         // when disposed, current is null, so nothing to do, and the resize observer will
         // be disposed of soon
@@ -85,17 +95,26 @@ const DetailCellRenderer = (props: IDetailCellRendererParams) => {
           // doing another update
           const updateRowHeightFunc = () => {
             props.node.setRowHeight(clientHeight);
-            if (clientSideRowModel) {
-              clientSideRowModel.onRowHeightChanged();
-            } else if (serverSideRowModel) {
-              serverSideRowModel.onRowHeightChanged();
+            if (rowModel.getType() === "clientSide") {
+              // clientSideRowModel.onRowHeightChanged();
+              rowModelHelperService
+                ?.getClientSideRowModel()
+                ?.onRowHeightChanged();
+            } else if (rowModel.getType() === "serverSide") {
+              // serverSideRowModel.onRowHeightChanged();
+              rowModelHelperService
+                ?.getServerSideRowModel()
+                ?.onRowHeightChanged();
             }
           };
           setTimeout(updateRowHeightFunc, 0);
         }
       };
 
-      resizeObserverDestroyFunc = resizeObserverService.observeResize(eGuiRef, checkRowSizeFunc);
+      resizeObserverDestroyFunc = resizeObserverService.observeResize(
+        eGuiRef,
+        checkRowSizeFunc
+      );
       checkRowSizeFunc();
     }
 
@@ -108,7 +127,7 @@ const DetailCellRenderer = (props: IDetailCellRendererParams) => {
   });
 
   const setRef = (ref: AgGridSolidRef) => {
-    ctrl.registerDetailWithMaster(ref.api, ref.columnApi);
+    ctrl.registerDetailWithMaster(ref.api);
   };
 
   return (

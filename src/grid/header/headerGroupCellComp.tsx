@@ -1,4 +1,9 @@
-import { HeaderGroupCellCtrl, IHeaderGroupCellComp, UserCompDetails } from "ag-grid-community";
+import {
+  HeaderGroupCellCtrl,
+  IHeaderGroupCellComp,
+  IHeaderGroupComp,
+  UserCompDetails,
+} from "ag-grid-community";
 import { createEffect, createMemo, createSignal, onMount } from "solid-js";
 import { CssClasses } from "../core/utils";
 import UserComp from "../userComps/userComp";
@@ -6,32 +11,44 @@ import UserComp from "../userComps/userComp";
 const HeaderGroupCellComp = (props: { ctrl: HeaderGroupCellCtrl }) => {
   const { ctrl } = props;
 
-  const [getCssClasses, setCssClasses] = createSignal<CssClasses>(new CssClasses());
-  const [getCssResizableClasses, setResizableCssClasses] = createSignal<CssClasses>(
-    new CssClasses(),
+  const [getCssClasses, setCssClasses] = createSignal<CssClasses>(
+    new CssClasses()
   );
-  const [getResizableAriaHidden, setResizableAriaHidden] = createSignal<"true" | "false">("false");
+  const [getCssResizableClasses, setResizableCssClasses] =
+    createSignal<CssClasses>(new CssClasses());
+  const [getResizableAriaHidden, setResizableAriaHidden] = createSignal<
+    "true" | "false"
+  >("false");
   const [getWidth, setWidth] = createSignal<string>();
   const [getColId, setColId] = createSignal<string>(ctrl.getColId());
-  const [getAriaExpanded, setAriaExpanded] = createSignal<"true" | "false" | undefined>();
-  const [getUserCompDetails, setUserCompDetails] = createSignal<UserCompDetails>();
+  const [getAriaExpanded, setAriaExpanded] = createSignal<
+    "true" | "false" | undefined
+  >();
+  const [getUserCompDetails, setUserCompDetails] =
+    createSignal<UserCompDetails>();
 
   let eGui: HTMLDivElement;
   let eResize: HTMLDivElement;
+  let eHeaderCompWrapper: HTMLDivElement;
+  let userCompRef: IHeaderGroupComp;
 
   onMount(() => {
     const compProxy: IHeaderGroupCellComp = {
       setWidth: (width) => setWidth(width),
-      addOrRemoveCssClass: (name, on) => setCssClasses(getCssClasses().setClass(name, on)),
+      addOrRemoveCssClass: (name, on) =>
+        setCssClasses(getCssClasses().setClass(name, on)),
       setUserCompDetails: (compDetails) => setUserCompDetails(compDetails),
       setResizableDisplayed: (displayed) => {
-        setResizableCssClasses((prev) => prev.setClass("ag-hidden", !displayed));
+        setResizableCssClasses((prev) =>
+          prev.setClass("ag-hidden", !displayed)
+        );
         setResizableAriaHidden(!displayed ? "true" : "false");
       },
       setAriaExpanded: (expanded) => setAriaExpanded(expanded),
+      getUserCompInstance: () => userCompRef || null,
     };
 
-    ctrl.setComp(compProxy, eGui, eResize);
+    ctrl.setComp(compProxy, eGui, eResize, eHeaderCompWrapper);
   });
 
   // add drag handling, must be done after component is added to the dom
@@ -48,9 +65,11 @@ const HeaderGroupCellComp = (props: { ctrl: HeaderGroupCellCtrl }) => {
     width: getWidth(),
   }));
 
-  const getClassName = createMemo(() => "ag-header-group-cell " + getCssClasses().toString());
+  const getClassName = createMemo(
+    () => "ag-header-group-cell " + getCssClasses().toString()
+  );
   const getResizableClassName = createMemo(
-    () => "ag-header-cell-resize " + getCssResizableClasses().toString(),
+    () => "ag-header-cell-resize " + getCssResizableClasses().toString()
   );
 
   return (
