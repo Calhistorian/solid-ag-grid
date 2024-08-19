@@ -1,6 +1,6 @@
 {
   "name": "@calhistorian/solid-ag-grid",
-  "version": "0.0.206",
+  "version": "0.0.207",
   "description": "AG Grid SolidJS Component",
   "license": "MIT",
   "author": "Niall Crosby <niall.crosby@ag-grid.com>",

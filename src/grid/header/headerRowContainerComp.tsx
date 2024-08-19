@@ -45,8 +45,8 @@ const HeaderRowContainerComp = (props: { pinned: ColumnPinnedType | null }) => {
   });
 
   onMount(() => {
-    if (!context) {
-      console.error("Context is not available");
+    if (!context.createBean) {
+      console.warn("Context is not available");
       return;
     }
 

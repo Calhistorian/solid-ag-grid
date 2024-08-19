@@ -27,7 +27,7 @@ const GridHeaderComp = () => {
 
   onMount(() => {
     if (!context) {
-      console.error("Context is not available");
+      console.warn("Context is not available");
       return;
     }
 
