@@ -121,5 +121,8 @@
     "./dist/server.js": "./dist/index.js",
     "./dist/server.cjs": "./dist/index.cjs"
   },
-  "typesVersions": {}
+  "typesVersions": {},
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  }
 }
